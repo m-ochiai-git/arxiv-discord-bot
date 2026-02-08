@@ -1,8 +1,6 @@
 name: Run arXiv bot
 
 on:
-  schedule:
-    - cron: "0 0 * * *"
   workflow_dispatch:
 
 jobs:
@@ -19,6 +17,12 @@ jobs:
 
       - name: Install packages
         run: pip install -r requirements.txt
+
+      - name: Debug secrets
+        run: |
+          echo "OPENAI_API_KEY exists: ${{ secrets.OPENAI_API_KEY != '' }}"
+          echo "WEBHOOK_HEP_TH exists: ${{ secrets.WEBHOOK_HEP_TH != '' }}"
+          echo "WEBHOOK_QUANT_PH exists: ${{ secrets.WEBHOOK_QUANT_PH != '' }}"
 
       - name: Run bot
         env:
