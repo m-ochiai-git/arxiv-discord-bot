@@ -3,8 +3,6 @@ import xml.etree.ElementTree as ET
 import os
 from openai import OpenAI
 
-print(os.environ)
-
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 WEBHOOKS = {
@@ -41,7 +39,7 @@ def choose_category(categories):
     return None
 
 def summarize(text):
-    prompt = f"以下の論文要旨を日本語で5行以内に要約してください:\n{text}"
+    prompt = f"以下の論文要旨を日本語で3行以内に要約してください:\n{text}"
 
     response = client.chat.completions.create(
         model="gpt-5-mini",
