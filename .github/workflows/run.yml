@@ -23,5 +23,6 @@ jobs:
       - name: Run bot
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          WEBHOOK_HEP_TH: ${{ secrets.WEBHOOK_HEP_TH }}
+          WEBHOOK_QUANT_PH: ${{ secrets.WEBHOOK_QUANT_PH }}
         run: python main.py
