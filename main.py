@@ -3,6 +3,8 @@ import xml.etree.ElementTree as ET
 import os
 from openai import OpenAI
 
+print(os.environ)
+
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 WEBHOOKS = {
