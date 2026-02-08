@@ -1,0 +1,42 @@
+Schwinger effect
+Sauter-Schwinger effect
+Schwinger mechanism
+Schwinger pair production
+vacuum pair production
+pair production
+pair creation
+particle production
+particle creation
+vacuum instability
+unstable vacuum
+vacuum decay
+strong electric field
+strong magnetic field
+strong electromagnetic field
+strong field
+intense field
+worldline instanton
+worldline formalism
+worldline representation
+
+Klein paradox
+Klein tunneling
+
+gravitational particle production
+gravitational particle creation
+Hawking radiation
+Unruh effect
+Unruh-DeWitt detector
+
+exact WKB
+Lefschetz thimble
+resurgence
+open quantum system
+master equation
+GKLS equation
+non-Markovian
+non-hermitian
+non-unitary
+wave packet
+quantum decay
+non-exponential decay
