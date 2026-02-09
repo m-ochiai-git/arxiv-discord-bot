@@ -22,8 +22,22 @@ def get_arxiv():
         "search_query=cat:hep-th+OR+cat:quant-ph"
         "&sortBy=submittedDate&max_results=10"
     )
-    r = requests.get(url)
-    root = ET.fromstring(r.text)
+    r = requests.get(url, timeout=30)
+    if r.status_code != 200:
+        print("arXiv request failed:")
+        print(r.status_code)
+        print(r.text[:500])
+        return []
+    if not r.text.strip():
+        print("Empty response from arXiv")
+        return []
+    try:
+        root = ET.fromstring(r.text)
+    except Exception as e:
+        print("XML parse error:")
+        print(e)
+        print(r.text[:500])
+        return []
     return root.findall("{http://www.w3.org/2005/Atom}entry")
 
 def get_categories(entry):
