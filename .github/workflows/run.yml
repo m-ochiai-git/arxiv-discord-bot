@@ -2,7 +2,7 @@ name: Run arXiv bot
 
 on:
   schedule:
-    - cron: "0 0 * * *"  # 毎日9:00 JST（UTC 0:00）
+    - cron: "15 0 * * *"  # 毎日9:15 JST（UTC 0:15）
   workflow_dispatch:
 
 jobs:
