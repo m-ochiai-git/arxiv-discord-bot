@@ -1,3 +1,4 @@
+import time
 import requests
 import xml.etree.ElementTree as ET
 import os
@@ -17,28 +18,28 @@ def load_keywords():
         return [k.strip().lower() for k in f.readlines()]
 
 def get_arxiv():
-    url = (
-        "http://export.arxiv.org/api/query?"
-        "search_query=cat:hep-th+OR+cat:quant-ph"
-        "&sortBy=submittedDate&max_results=10"
-    )
-    r = requests.get(url, timeout=30)
-    if r.status_code != 200:
-        print("arXiv request failed:")
-        print(r.status_code)
-        print(r.text[:500])
-        return []
-    if not r.text.strip():
-        print("Empty response from arXiv")
-        return []
-    try:
-        root = ET.fromstring(r.text)
-    except Exception as e:
-        print("XML parse error:")
-        print(e)
-        print(r.text[:500])
-        return []
-    return root.findall("{http://www.w3.org/2005/Atom}entry")
+    url = "https://export.arxiv.org/api/query?search_query=cat:hep-th+OR+cat:quant-ph&sortBy=submittedDate&sortOrder=descending&max_results=30"
+    headers = {
+        "User-Agent": "arxiv-discord-bot/1.0"
+    }
+    for attempt in range(3):  # 最大3回リトライ
+        try:
+            print(f"arXiv request attempt {attempt+1}")
+            r = requests.get(url, headers=headers, timeout=60)
+            if r.status_code != 200:
+                print("Bad status:", r.status_code)
+                time.sleep(5)
+                continue
+            root = ET.fromstring(r.text)
+            return root.findall("{http://www.w3.org/2005/Atom}entry")
+        except requests.exceptions.RequestException as e:
+            print("Request error:", e)
+            time.sleep(5)
+        except ET.ParseError as e:
+            print("XML parse error:", e)
+            time.sleep(5)
+    print("arXiv request failed after retries.")
+    return []
 
 def get_categories(entry):
     cats = []
