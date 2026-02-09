@@ -100,7 +100,7 @@ def summarize(text):
 # Discord
 # -----------------------------
 def send_to_discord(webhook, category, title, summary,
-                    link, pdf_link, authors,
+                    link, authors,
                     published, matched_keywords):
 
     colors = {
@@ -115,8 +115,7 @@ def send_to_discord(webhook, category, title, summary,
         "color": colors.get(category, 0xffffff),
         "fields": [
             {"name": "Authors", "value": authors, "inline": False},
-            {"name": "Published", "value": published, "inline": True},
-            {"name": "PDF", "value": pdf_link, "inline": True},
+            {"name": "Submitted", "value": published, "inline": True},
             {
                 "name": "Matched keywords",
                 "value": ", ".join(matched_keywords),
@@ -153,10 +152,6 @@ def main():
         summary = e.find(f"{ATOM}summary").text.strip()
         link = e.find(f"{ATOM}id").text.strip()
 
-        # PDFリンク作成
-        arxiv_id = link.split("/")[-1]
-        pdf_link = f"https://arxiv.org/pdf/{arxiv_id}.pdf"
-
         # 著者
         authors = [
             a.find(f"{ATOM}name").text
@@ -170,7 +165,7 @@ def main():
         )
 
         # 投稿日
-        published = e.find(f"{ATOM}published").text[:10]
+        published = e.find(f"{ATOM}Submitted").text[:10]
 
         categories = get_categories(e)
         target = choose_category(categories)
@@ -193,7 +188,6 @@ def main():
             title,
             short,
             link,
-            pdf_link,
             author_text,
             published,
             matched
