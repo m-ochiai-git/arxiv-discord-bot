@@ -86,14 +86,19 @@ def choose_category(categories):
 # GPT summary
 # -----------------------------
 def summarize(text):
-    prompt = f"以下の論文要旨を日本語で3行以内に要約してください:\n{text}"
+    try:
+        prompt = f"以下の論文要旨を日本語で3行以内に要約してください:\n{text}"
 
-    response = client.chat.completions.create(
-        model="gpt-5-mini",
-        messages=[{"role": "user", "content": prompt}]
-    )
+        response = client.chat.completions.create(
+            model="gpt-5-mini",
+            messages=[{"role": "user", "content": prompt}]
+        )
 
-    return response.choices[0].message.content
+        return response.choices[0].message.content
+
+    except Exception as e:
+        print("GPT error:", e)
+        return "（要約の取得に失敗しました）"
 
 
 # -----------------------------
@@ -165,7 +170,7 @@ def main():
         )
 
         # 投稿日
-        published = e.find(f"{ATOM}Submitted").text[:10]
+        published = e.find(f"{ATOM}published").text[:10]
 
         categories = get_categories(e)
         target = choose_category(categories)
