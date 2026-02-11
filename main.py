@@ -111,6 +111,7 @@ def send_to_discord(webhook, category, title, summary,
     colors = {
         "hep-th": 0x3498db,
         "quant-ph": 0x2ecc71,
+        "cond-matt": 0xffa500
     }
 
     embed = {
