@@ -10,9 +10,10 @@ client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 WEBHOOKS = {
     "hep-th": os.environ["WEBHOOK_HEP_TH"],
     "quant-ph": os.environ["WEBHOOK_QUANT_PH"],
+    "cond-matt": os.environ["WEBHOOK_COND_MATT"]
 }
 
-PRIORITY = ["hep-th", "quant-ph"]
+PRIORITY = ["hep-th", "quant-ph", "cond-matt"]
 
 ATOM = "{http://www.w3.org/2005/Atom}"
 
@@ -38,7 +39,7 @@ def find_matching_keywords(text, keywords):
 # arXiv API
 # -----------------------------
 def get_arxiv():
-    url = "https://export.arxiv.org/api/query?search_query=cat:hep-th+OR+cat:quant-ph&sortBy=submittedDate&sortOrder=descending&max_results=30"
+    url = "https://export.arxiv.org/api/query?search_query=cat:hep-th+OR+cat:quant-ph+OR+cat:cond-matt&sortBy=submittedDate&sortOrder=descending&max_results=30"
 
     headers = {"User-Agent": "arxiv-discord-bot/1.0"}
 
@@ -105,8 +106,7 @@ def summarize(text):
 # Discord
 # -----------------------------
 def send_to_discord(webhook, category, title, summary,
-                    link, authors,
-                    published, matched_keywords):
+                    link, authors, published, matched_keywords):
 
     colors = {
         "hep-th": 0x3498db,
