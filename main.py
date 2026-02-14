@@ -10,10 +10,10 @@ client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 WEBHOOKS = {
     "hep-th": os.environ["WEBHOOK_HEP_TH"],
     "quant-ph": os.environ["WEBHOOK_QUANT_PH"],
-    "cond-matt": os.environ["WEBHOOK_COND_MATT"]
+    "cond-matt": os.environ["WEBHOOK_COND_MATT"],
 }
 
-PRIORITY = ["hep-th", "quant-ph", "cond-matt"]
+CATEGORIES = list(WEBHOOKS.keys())
 
 ATOM = "{http://www.w3.org/2005/Atom}"
 
@@ -26,7 +26,7 @@ def load_keywords():
         return [
             line.strip().lower()
             for line in f
-            if line.strip()  # ← 空行を無視
+            if line.strip()
         ]
 
 
@@ -36,16 +36,22 @@ def find_matching_keywords(text, keywords):
 
 
 # -----------------------------
-# arXiv API
+# arXiv API（カテゴリ別）
 # -----------------------------
-def get_arxiv():
-    url = "https://export.arxiv.org/api/query?search_query=cat:hep-th+OR+cat:quant-ph+OR+cat:cond-matt&sortBy=submittedDate&sortOrder=descending&max_results=30"
+def get_arxiv(category):
+    url = (
+        "https://export.arxiv.org/api/query?"
+        f"search_query=cat:{category}"
+        "&sortBy=submittedDate"
+        "&sortOrder=descending"
+        "&max_results=30"
+    )
 
     headers = {"User-Agent": "arxiv-discord-bot/1.0"}
 
     for attempt in range(3):
         try:
-            print(f"arXiv request attempt {attempt+1}")
+            print(f"[{category}] arXiv request attempt {attempt+1}")
 
             r = requests.get(url, headers=headers, timeout=60)
 
@@ -65,26 +71,12 @@ def get_arxiv():
             print("XML parse error:", e)
             time.sleep(5)
 
-    print("arXiv request failed after retries.")
+    print(f"[{category}] arXiv request failed after retries.")
     return []
 
 
-def get_categories(entry):
-    return [
-        c.attrib["term"]
-        for c in entry.findall(f"{ATOM}category")
-    ]
-
-
-def choose_category(categories):
-    for p in PRIORITY:
-        if p in categories:
-            return p
-    return None
-
-
 # -----------------------------
-# GPT summary
+# GPT summary（安全版）
 # -----------------------------
 def summarize(text):
     try:
@@ -106,12 +98,13 @@ def summarize(text):
 # Discord
 # -----------------------------
 def send_to_discord(webhook, category, title, summary,
-                    link, authors, published, matched_keywords):
+                    link, authors,
+                    published, matched_keywords):
 
     colors = {
         "hep-th": 0x3498db,
         "quant-ph": 0x2ecc71,
-        "cond-matt": 0xffa500
+        "cond-matt": 0xe67e22,
     }
 
     embed = {
@@ -134,13 +127,11 @@ def send_to_discord(webhook, category, title, summary,
     requests.post(webhook, json={"embeds": [embed]})
 
 
-def send_zero_message(counts):
-    today = datetime.now().strftime("%Y-%m-%d")
-
-    for cat, webhook in WEBHOOKS.items():
-        if counts[cat] == 0:
-            msg = f"📭 {today}：該当論文は0件でした"
-            requests.post(webhook, json={"content": msg})
+def send_zero_message(category, count):
+    if count == 0:
+        today = datetime.now().strftime("%Y-%m-%d")
+        msg = f"📭 {today}：該当論文は0件でした"
+        requests.post(WEBHOOKS[category], json={"content": msg})
 
 
 # -----------------------------
@@ -148,61 +139,54 @@ def send_zero_message(counts):
 # -----------------------------
 def main():
     keywords = load_keywords()
-    entries = get_arxiv()
 
-    posted_counts = {k: 0 for k in WEBHOOKS}
+    for category in CATEGORIES:
 
-    for e in entries:
+        entries = get_arxiv(category)
+        posted_count = 0
 
-        title = e.find(f"{ATOM}title").text.strip()
-        summary = e.find(f"{ATOM}summary").text.strip()
-        link = e.find(f"{ATOM}id").text.strip()
+        for e in entries:
 
-        # 著者
-        authors = [
-            a.find(f"{ATOM}name").text
-            for a in e.findall(f"{ATOM}author")
-        ]
+            title = e.find(f"{ATOM}title").text.strip()
+            summary = e.find(f"{ATOM}summary").text.strip()
+            link = e.find(f"{ATOM}id").text.strip()
 
-        author_text = (
-            ", ".join(authors[:3]) + " et al."
-            if len(authors) > 3
-            else ", ".join(authors)
-        )
+            authors = [
+                a.find(f"{ATOM}name").text
+                for a in e.findall(f"{ATOM}author")
+            ]
 
-        # 投稿日
-        published = e.find(f"{ATOM}published").text[:10]
+            author_text = (
+                ", ".join(authors[:3]) + " et al."
+                if len(authors) > 3
+                else ", ".join(authors)
+            )
 
-        categories = get_categories(e)
-        target = choose_category(categories)
+            published = e.find(f"{ATOM}published").text[:10]
 
-        if not target:
-            continue
+            text = (title + " " + summary).lower()
+            matched = find_matching_keywords(text, keywords)
 
-        text = (title + " " + summary).lower()
+            if not matched:
+                continue
 
-        matched = find_matching_keywords(text, keywords)
+            short = summarize(summary)
 
-        if not matched:
-            continue
+            send_to_discord(
+                WEBHOOKS[category],
+                category,
+                title,
+                short,
+                link,
+                author_text,
+                published,
+                matched
+            )
 
-        short = summarize(summary)
+            posted_count += 1
 
-        send_to_discord(
-            WEBHOOKS[target],
-            target,
-            title,
-            short,
-            link,
-            author_text,
-            published,
-            matched
-        )
-
-        posted_counts[target] += 1
-
-    # 0件通知
-    send_zero_message(posted_counts)
+        # カテゴリ別 0件通知
+        send_zero_message(category, posted_count)
 
 
 if __name__ == "__main__":
