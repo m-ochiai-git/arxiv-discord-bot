@@ -13,16 +13,24 @@ vacuum decay
 strong electric field
 strong magnetic field
 strong electromagnetic field
+vacuum birefringence
 strong field
 intense field
 worldline instanton
 worldline formalism
 worldline representation
+Euler-Heisenberg
 
 Klein paradox
 Klein's paradox
 Klein tunneling
 Klein scattering
+supercritical potential
+overcritical potential
+
+Landau-Zener
+non-adiabatic transition
+shortcut to adiabaticity
 
 gravitational particle production
 gravitational particle creation
@@ -42,3 +50,5 @@ non-unitary
 wave packet
 quantum decay
 non-exponential decay
+power-law decay
+unstable quantum systems
