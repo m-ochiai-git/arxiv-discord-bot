@@ -9,11 +9,19 @@ client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 WEBHOOKS = {
     "hep-th": os.environ["WEBHOOK_HEP_TH"],
+    "hep-ph": os.environ["WEBHOOK_HEP_PH"],
     "quant-ph": os.environ["WEBHOOK_QUANT_PH"],
-    "cond-matt": os.environ["WEBHOOK_COND_MATT"],
+    "cond-matt": os.environ["WEBHOOK_COND_MATT"]
 }
 
 CATEGORIES = list(WEBHOOKS.keys())
+
+MAX_RESULTS = {
+    "hep-th": 50,
+    "hep-ph": 50,
+    "quant-ph": 100,
+    "cond-matt": 100
+}
 
 ATOM = "{http://www.w3.org/2005/Atom}"
 
@@ -39,12 +47,15 @@ def find_matching_keywords(text, keywords):
 # arXiv API（カテゴリ別）
 # -----------------------------
 def get_arxiv(category):
+
+    max_results = MAX_RESULTS.get(category, 30)
+
     url = (
         "https://export.arxiv.org/api/query?"
         f"search_query=cat:{category}"
         "&sortBy=submittedDate"
         "&sortOrder=descending"
-        "&max_results=30"
+        f"&max_results={max_results}"
     )
 
     headers = {"User-Agent": "arxiv-discord-bot/1.0"}
@@ -76,7 +87,7 @@ def get_arxiv(category):
 
 
 # -----------------------------
-# GPT summary（安全版）
+# GPT summary
 # -----------------------------
 def summarize(text):
     try:
@@ -103,6 +114,7 @@ def send_to_discord(webhook, category, title, summary,
 
     colors = {
         "hep-th": 0x3498db,
+        "hep-ph": 0x948bdb,
         "quant-ph": 0x2ecc71,
         "cond-matt": 0xe67e22,
     }
