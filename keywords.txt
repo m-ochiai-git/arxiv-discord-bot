@@ -27,6 +27,7 @@ Klein tunneling
 Klein scattering
 supercritical potential
 overcritical potential
+potential scattering
 
 Landau-Zener
 non-adiabatic transition
@@ -46,9 +47,13 @@ master equation
 GKLS equation
 non-Markovian
 non-hermitian
+bound state in the continuum
 non-unitary
 wave packet
 quantum decay
 non-exponential decay
 power-law decay
 unstable quantum systems
+resonant state expansion
+Siegert boundary condition
+Su-Schrieffer-Heeger model
