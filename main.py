@@ -2,7 +2,7 @@ import time
 import requests
 import xml.etree.ElementTree as ET
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from openai import OpenAI
 
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
@@ -10,17 +10,15 @@ client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 WEBHOOKS = {
     "hep-th": os.environ["WEBHOOK_HEP_TH"],
     "hep-ph": os.environ["WEBHOOK_HEP_PH"],
-    "quant-ph": os.environ["WEBHOOK_QUANT_PH"],
-    "cond-matt": os.environ["WEBHOOK_COND_MATT"]
+    "quant-ph": os.environ["WEBHOOK_QUANT_PH"]
 }
 
 CATEGORIES = list(WEBHOOKS.keys())
 
 MAX_RESULTS = {
-    "hep-th": 50,
-    "hep-ph": 50,
-    "quant-ph": 100,
-    "cond-matt": 150
+    "hep-th": 100,
+    "hep-ph": 100,
+    "quant-ph": 200
 }
 
 ATOM = "{http://www.w3.org/2005/Atom}"
@@ -87,26 +85,6 @@ def get_arxiv(category):
 
 
 # -----------------------------
-# published date
-# -----------------------------
-def is_recent(published_str):
-    """
-    arXivのpublished日時が
-    UTCで昨日以降かどうか判定
-    """
-
-    # arXiv形式: 2026-02-15T00:23:45Z
-    published = datetime.fromisoformat(
-        published_str.replace("Z", "+00:00")
-    )
-
-    now = datetime.now(timezone.utc)
-    yesterday = now - timedelta(days=1)
-
-    return published >= yesterday
-
-
-# -----------------------------
 # GPT summary
 # -----------------------------
 def summarize(text):
@@ -130,7 +108,7 @@ def summarize(text):
 # -----------------------------
 def send_to_discord(webhook, category, title, summary,
                     link, authors,
-                    published_date, matched_keywords):
+                    published, matched_keywords):
 
     colors = {
         "hep-th": 0x3498db,
@@ -146,7 +124,7 @@ def send_to_discord(webhook, category, title, summary,
         "color": colors.get(category, 0xffffff),
         "fields": [
             {"name": "Authors", "value": authors, "inline": False},
-            {"name": "Submitted", "value": published_date, "inline": True},
+            {"name": "Submitted", "value": published, "inline": True},
             {
                 "name": "Matched keywords",
                 "value": ", ".join(matched_keywords),
@@ -194,12 +172,7 @@ def main():
                 else ", ".join(authors)
             )
 
-            published = e.find(f"{ATOM}published").text
-            
-            if not is_recent(published):
-                continue
-            
-            published_date = published[:10]
+            published = e.find(f"{ATOM}published").text[:10]
 
             text = (title + " " + summary).lower()
             matched = find_matching_keywords(text, keywords)
@@ -216,7 +189,7 @@ def main():
                 short,
                 link,
                 author_text,
-                published_date,
+                published,
                 matched
             )
 
