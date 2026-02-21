@@ -24,7 +24,5 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           WEBHOOK_HEP_TH: ${{ secrets.WEBHOOK_HEP_TH }}
-          WEBHOOK_HEP_PH: ${{ secrets.WEBHOOK_HEP_PH }}
           WEBHOOK_QUANT_PH: ${{ secrets.WEBHOOK_QUANT_PH }}
-          WEBHOOK_COND_MATT: ${{ secrets.WEBHOOK_COND_MATT }}
         run: python main.py
